@@ -12,14 +12,13 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 K.set_session(tf.Session(config=config))
 
-MODEL = 'data/models/policy_model.json'
-WEIGHTS = 'data/weights/weights.00100.hdf5'
+MODEL = 'data/models/policy_cnn12.json'
+WEIGHTS = 'data/models/weights_cnn12.hdf5'
 
-policy = CNNPolicy.load_model(MODEL)
-policy.model.load_weights(WEIGHTS)
+model = CNNPolicy.load_model(MODEL)
+model.model.load_weights(WEIGHTS)
 
 # policy.model.summary()
 
-player = GreedyPolicyPlayer(policy)
-
+player = GreedyPolicyPlayer(model)
 run_gtp(player, name="ChickBot", version="0.1", helper_level=15, debug=True)
