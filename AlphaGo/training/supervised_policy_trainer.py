@@ -262,6 +262,20 @@ def run_training(cmd_line_args=None):
         validation_data=val_data_generator,
         nb_val_samples=n_val_data)
 
+def limit_gpu_memory(fraction = 0.4):
+    import tensorflow as tf
+    from keras.backend.tensorflow_backend import set_session
+    config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = fraction
+    set_session(tf.Session(config=config))
+
+def auto_gpu_memory():
+    import tensorflow as tf
+    from keras.backend.tensorflow_backend import set_session
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    set_session(tf.Session(config=config))
 
 if __name__ == '__main__':
+    limit_gpu_memory(0.4)
     run_training()

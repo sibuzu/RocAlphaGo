@@ -1,6 +1,6 @@
 from keras.models import Sequential, Model
 from keras.layers import convolutional, merge, Input, BatchNormalization
-from keras.layers.core import Activation, Flatten
+from keras.layers.core import Activation, Flatten, Dropout
 from AlphaGo.util import flatten_idx
 from AlphaGo.models.nn_util import Bias, NeuralNetBase, neuralnet
 import numpy as np
@@ -75,12 +75,14 @@ class CNNPolicy(NeuralNetBase):
         - filter_width_K:        (where K is between 1 and <layers>) width of filter on
                                 layer K (default 3 except 1st layer which defaults to 5).
                                 Must be odd.
+        - dropout                a fraction of dropout
         """
         defaults = {
             "board": 19,
             "filters_per_layer": 128,
             "layers": 12,
-            "filter_width_1": 5
+            "filter_width_1": 5,
+            "dropout": 0
         }
         # copy defaults, but override with anything in kwargs
         params = defaults
@@ -113,6 +115,8 @@ class CNNPolicy(NeuralNetBase):
                 init='uniform',
                 activation='relu',
                 border_mode='same'))
+            if params["dropout"] > 0:
+                network.add(Dropout(params["dropout"]))
 
         # the last layer maps each <filters_per_layer> feature to a number
         network.add(convolutional.Convolution2D(

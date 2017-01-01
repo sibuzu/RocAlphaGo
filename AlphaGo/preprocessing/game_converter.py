@@ -1,12 +1,15 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import numpy as np
 from AlphaGo.preprocessing.preprocessing import Preprocess
 from AlphaGo.util import sgf_iter_states
 import AlphaGo.go as go
 import os
+import sys
 import warnings
 import sgf
 import h5py as h5
+import time
 
 
 class SizeMismatchError(Exception):
@@ -97,11 +100,16 @@ class GameConverter:
 
             if verbose:
                 print("created HDF5 dataset in {}".format(tmp_file))
+                sys.stdout.flush()
 
             next_idx = 0
+            idx = 0
+            start = time.time()
             for file_name in sgf_files:
                 if verbose:
-                    print(file_name)
+                    print("{}: {}".format(idx, file_name))
+                    sys.stdout.flush()
+                    idx += 1
                 # count number of state/action pairs yielded by this game
                 n_pairs = 0
                 file_start_idx = next_idx
@@ -135,7 +143,7 @@ class GameConverter:
                         file_name_key = file_name.replace('/', ':')
                         file_offsets[file_name_key] = [file_start_idx, n_pairs]
                         if verbose:
-                            print("\t%d state/action pairs extracted" % n_pairs)
+                            print("  {} state/action pairs extracted, t = {:.2f}s".format(n_pairs, time.time()-start))
                     elif verbose:
                         print("\t-no usable data-")
         except Exception as e:
@@ -150,6 +158,13 @@ class GameConverter:
         h5f.close()
         os.rename(tmp_file, hdf5_file)
 
+def do_convert(converter, subfiles, args, index, start):    
+    outfile = args.outfile + "-{0:03d}.hdf5".format(index)
+    if index >= int(args.begin) and index < int(args.end):
+        if not args.dry:
+            converter.sgfs_to_hdf5(subfiles, outfile, bd_size=args.size, verbose=args.verbose)
+        print("------------ {}, using {} seconds".format(outfile, time.time()-start))
+        sys.stdout.flush()
 
 def run_game_converter(cmd_line_args=None):
     """Run conversions. command-line args may be passed in as a list
@@ -167,7 +182,11 @@ def run_game_converter(cmd_line_args=None):
     parser.add_argument("--recurse", "-R", help="Set to recurse through directories searching for SGF files", default=False, action="store_true")  # noqa: E501
     parser.add_argument("--directory", "-d", help="Directory containing SGF files to process. if not present, expects files from stdin", default=None)  # noqa: E501
     parser.add_argument("--size", "-s", help="Size of the game board. SGFs not matching this are discarded with a warning", type=int, default=19)  # noqa: E501
+    parser.add_argument("--gsize", "-g", help="Group sgf file counts in one hdf5 file", type=int, default=1000)  # noqa: E501
     parser.add_argument("--verbose", "-v", help="Turn on verbose mode", default=False, action="store_true")  # noqa: E501
+    parser.add_argument("--dry", "-D", help="Dry run", default=False, action="store_true")  
+    parser.add_argument("--begin", "-b", help="Begin Group Index", type=int, default=0)  
+    parser.add_argument("--end", "-e", help="End Group Index (not included)", type=int, default=10000)  
 
     if cmd_line_args is None:
         args = parser.parse_args()
@@ -222,7 +241,22 @@ def run_game_converter(cmd_line_args=None):
     else:
         files = (f.strip() for f in sys.stdin if _is_sgf(f))
 
-    converter.sgfs_to_hdf5(files, args.outfile, bd_size=args.size, verbose=args.verbose)
+    subfiles = []
+    outfile = args.outfile
+    group_size = args.gsize
+    index = 0
+    start = time.time()
+    for f in files:
+        subfiles.append(f)
+        if len(subfiles)==group_size:
+            do_convert(converter, subfiles, args, index, start)
+            start = time.time()
+            subfiles = []
+            index += 1
+
+    if len(subfiles) > 0:
+        do_convert(converter, subfiles, args, index, start)
+
 
 
 if __name__ == '__main__':
