@@ -3,7 +3,7 @@
 from __future__ import print_function
 import argparse
 
-MODEL = 'data/models/policy_cnn12.json'
+MODEL = 'data/models/model_cnn12.json'
 WEIGHTS = 'data/models/weights_cnn12.hdf5'
 
 def play(model, weight):

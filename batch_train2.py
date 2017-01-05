@@ -7,7 +7,8 @@ import glob
 import time
 from random import shuffle
 
-PWD = '/home/simon/git/RocAlphaGo'
+# PWD = '/home/simon/git/RocAlphaGo'
+PWD = os.getcwd()
 WIGHTPATH = 'data/weight2/'
 WIGHTFILE = 'weights.{:05d}.hdf5'
 WEIGHFILEPATH = WIGHTPATH + WIGHTFILE
