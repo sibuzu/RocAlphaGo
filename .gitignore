@@ -10,3 +10,9 @@
 src/
 benchmarks/data/
 /.idea
+data/weights
+data/weight2
+data/KGS
+data/hdf
+nohup_run.sh
+*.log

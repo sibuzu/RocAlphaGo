@@ -7,10 +7,12 @@ import glob
 import time
 from random import shuffle
 
-PWD = '/home/simon/git/RocAlphaGo'
+# PWD = '/home/simon/git/RocAlphaGo'
+PWD = os.getcwd()
 WIGHTPATH = 'data/weight2/'
 WIGHTFILE = 'weights.{:05d}.hdf5'
 WEIGHFILEPATH = WIGHTPATH + WIGHTFILE
+EPOCH = 3
 os.chdir(PWD)
 
 while True:
@@ -30,15 +32,15 @@ while True:
         cmd += 'python AlphaGo/training/supervised_policy_trainer.py data/models/policy_model2.json '
         if not os.path.isdir(WIGHTPATH):
             os.mkdir(WIGHTPATH)
-        cmd += tfile + ' ' + WIGHTPATH + ' -E 3'
-        if os.path.isfile(WEIGHFILEPATH.format(0)):
-            cmd += ' --weights ' + WIGHTFILE.format(0)
+        cmd += '{} {} -E {}'.format(tfile, WIGHTPATH, EPOCH)
+        if os.path.isfile(WEIGHFILEPATH.format(EPOCH-1)):
+            cmd += ' --weights ' + WIGHTFILE.format(EPOCH-1)
         print(cmd)        
         res = os.system(cmd) # run cmd
 
         if res == 0:
             max_weight += 1
-            cmd2 = 'cp {} {}'.format(WEIGHFILEPATH.format(0), WEIGHFILEPATH.format(max_weight))
+            cmd2 = 'cp {} {}'.format(WEIGHFILEPATH.format(EPOCH-1), WEIGHFILEPATH.format(max_weight))
             print(cmd2)
             os.system(cmd2) # run cmd2
 
