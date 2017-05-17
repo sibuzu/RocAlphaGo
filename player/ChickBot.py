@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print("MODEL: {}".format(args.model))
-    print("WEIGHTS: {}".format(args.weights))
+    # print("MODEL: {}".format(args.model))
+    # print("WEIGHTS: {}".format(args.weights))
     play(args.model, args.weights)
 
